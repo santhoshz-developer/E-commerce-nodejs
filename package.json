@@ -1,0 +1,43 @@
+{
+  "name": "e-commerce-backend",
+  "version": "1.0.0",
+  "description": "Serverless Node.js API with DynamoDB and MongoDB integration",
+  "main": "app.js",
+  "scripts": {
+    "dev": "ts-node-dev app.ts",
+    "build": "tsc",
+    "deploy": "npm run build && serverless deploy",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.637.0",
+    "@aws-sdk/lib-dynamodb": "^3.637.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-validator": "^7.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.8.0",
+    "mongoose": "^8.5.4",
+    "serverless-http": "^3.2.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^22.5.0",
+    "@types/uuid": "^10.0.0",
+    "jest": "^29.7.0",
+    "serverless-dotenv-plugin": "^6.0.0",
+    "serverless-offline": "^13.7.0",
+    "supertest": "^7.0.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.4"
+  },
+  "author": "",
+  "license": "ISC"
+}
