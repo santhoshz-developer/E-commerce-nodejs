@@ -1,8 +1,12 @@
-service: e-commerce-nodejs-dynamodb
+service: e-commerce-nodejs
 
 provider:
   name: aws
   runtime: nodejs20.x
+  memorySize: 128
+  stage: dev
+  timeout: 15
+  region: ap-south-1
   iam:
     role:
       statements:
@@ -21,12 +25,13 @@ provider:
     MONGODB_URI: ${env:MONGODB_URI}
     JWT_SECRET: ${env:JWT_SECRET}
 
-
 functions:
   api:
-    handler: handler.handler
+    handler: handler.appHandler
     events:
-      - httpApi: "*"
+      - httpApi:
+          path: /api/{proxy+}
+          method: ANY
 
 resources:
   Resources:
@@ -36,6 +41,8 @@ resources:
         AttributeDefinitions:
           - AttributeName: userId
             AttributeType: S
+          - AttributeName: email
+            AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
@@ -43,5 +50,5 @@ resources:
         TableName: ${env:USERS_TABLE}
 
 plugins:
-  - serverless-offline
   - serverless-dotenv-plugin
+  - serverless-offline

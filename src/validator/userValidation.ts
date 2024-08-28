@@ -1,8 +1,6 @@
 import { body } from 'express-validator';
 import User from '../models/userModel';
 
-// *******************   SIGNUP   ********************
-
 export const validateUserSignup = [
   body('name').notEmpty().withMessage('Name is required'),
   body('email')
@@ -25,8 +23,6 @@ export const validateUserSignup = [
     .isMobilePhone('any')
     .withMessage('Enter a valid phone number'),
 ];
-
-// *******************   LOGIN   ********************
 
 export const validateLogin = [
   body('email').isEmail().withMessage('Enter a valid email'),
