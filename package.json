@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "dev": "ts-node-dev app.ts",
+    "start": "node dist/app.js",
     "build": "tsc",
     "deploy": "npm run build && serverless deploy",
     "test": "jest"
