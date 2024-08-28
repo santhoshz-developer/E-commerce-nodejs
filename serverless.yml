@@ -19,7 +19,9 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource:
-            - Fn::GetAtt: [UsersTable, Arn]
+            - Fn::GetAtt:
+                - UsersTable
+                - Arn
   environment:
     USERS_TABLE: ${env:USERS_TABLE}
     MONGODB_URI: ${env:MONGODB_URI}
@@ -40,8 +42,6 @@ resources:
       Properties:
         AttributeDefinitions:
           - AttributeName: userId
-            AttributeType: S
-          - AttributeName: email
             AttributeType: S
         KeySchema:
           - AttributeName: userId

@@ -11,8 +11,23 @@ const uuid_1 = require("uuid");
 const client_dynamodb_1 = require("@aws-sdk/client-dynamodb");
 const client = new client_dynamodb_1.DynamoDBClient({ region: 'ap-south-1' });
 const createUserHandler = async (req, res) => {
-    const { name, email, password, phoneNumber } = req.body;
+    const { name, email, password, confirmPassword, phoneNumber } = req.body;
+    // Validate request body
+    if (!name || !email || !password || !confirmPassword || !phoneNumber) {
+        res.status(400).json({ message: 'Missing required fields' });
+        return;
+    }
+    if (password !== confirmPassword) {
+        res.status(400).json({ message: 'Passwords do not match' });
+        return;
+    }
     try {
+        // Check if user already exists
+        const existingUser = await userModel_1.default.findOne({ email });
+        if (existingUser) {
+            res.status(400).json({ message: 'User already exists' });
+            return;
+        }
         // Hash the password
         const hashedPassword = await bcryptjs_1.default.hash(password, 12);
         const userId = (0, uuid_1.v4)();
@@ -36,7 +51,13 @@ const createUserHandler = async (req, res) => {
                 phoneNumber: { S: phoneNumber },
             },
         };
-        await client.send(new client_dynamodb_1.PutItemCommand(params));
+        try {
+            await client.send(new client_dynamodb_1.PutItemCommand(params));
+        }
+        catch (dynamoError) {
+            console.error('Error saving to DynamoDB:', dynamoError);
+            res.status(500).json({ message: `Error saving to DynamoDB: ${dynamoError.message}`, error: dynamoError });
+        }
         res.status(201).json({ message: 'User created successfully', user: { userId, name, email, phoneNumber } });
     }
     catch (error) {
@@ -47,6 +68,11 @@ const createUserHandler = async (req, res) => {
 exports.createUserHandler = createUserHandler;
 const loginUserHandler = async (req, res) => {
     const { email, password } = req.body;
+    // Validate request body
+    if (!email || !password) {
+        res.status(400).json({ message: 'Missing required fields' });
+        return;
+    }
     try {
         // Check user in MongoDB
         const user = await userModel_1.default.findOne({ email });
