@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { successResponse, errorResponse } from "../utils/responseUtils";
 import messages from "../utils/commonFile.json";
+
 const dynamoDBClient = new DynamoDBClient({ region: "ap-south-1" });
 
 export const handleUserSignup = async (
@@ -16,39 +17,39 @@ export const handleUserSignup = async (
 
   try {
     // Validate input
-    if (!firstName || !lastName || !email || !password || !phoneNumber) {
-      const errors = [
-        {
-          type: "field",
-          msg: messages.validation.firstNameRequired,
-          path: "firstName",
-          location: "body",
-        },
-        {
-          type: "field",
-          msg: messages.validation.lastNameRequired,
-          path: "lastName",
-          location: "body",
-        },
-        {
-          type: "field",
-          msg: messages.validation.emailInvalid,
-          path: "email",
-          location: "body",
-        },
-        {
-          type: "field",
-          msg: messages.validation.passwordRequired,
-          path: "password",
-          location: "body",
-        },
-        {
-          type: "field",
-          msg: messages.validation.phoneNumberInvalid,
-          path: "phoneNumber",
-          location: "body",
-        },
-      ].filter((error) => !req.body[error.path]);
+    const errors = [];
+    if (!firstName) errors.push({
+      type: "field",
+      msg: messages.validation.firstNameRequired,
+      path: "firstName",
+      location: "body",
+    });
+    if (!lastName) errors.push({
+      type: "field",
+      msg: messages.validation.lastNameRequired,
+      path: "lastName",
+      location: "body",
+    });
+    if (!email) errors.push({
+      type: "field",
+      msg: messages.validation.emailInvalid,
+      path: "email",
+      location: "body",
+    });
+    if (!password) errors.push({
+      type: "field",
+      msg: messages.validation.passwordRequired,
+      path: "password",
+      location: "body",
+    });
+    if (!phoneNumber) errors.push({
+      type: "field",
+      msg: messages.validation.phoneNumberInvalid,
+      path: "phoneNumber",
+      location: "body",
+    });
+
+    if (errors.length > 0) {
       return errorResponse(res, 400, messages.validation.missingFields, errors);
     }
 
