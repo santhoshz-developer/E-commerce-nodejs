@@ -1,55 +1,74 @@
-import { Request, Response } from 'express';
-import User from '../models/userModel';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
-import { DynamoDBClient, PutItemCommand, GetItemCommand } from '@aws-sdk/client-dynamodb';
+import { Request, Response } from "express";
+import User from "../models/userModel";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { successResponse, errorResponse } from "../utils/responseUtils";
+import messages from "../utils/commonFile.json";
+const dynamoDBClient = new DynamoDBClient({ region: "ap-south-1" });
 
-
-const client = new DynamoDBClient({ region: 'ap-south-1' });
-
-export const createUserHandler = async (req: Request, res: Response): Promise<void> => {
-  const { name, email, password, confirmPassword, phoneNumber } = req.body;
-
-  // Validate request body
-  if (!name || !email || !password || !confirmPassword || !phoneNumber) {
-    res.status(400).json({ message: 'Missing required fields' });
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    res.status(400).json({ message: 'Passwords do not match' });
-    return;
-  }
+export const handleUserSignup = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { firstName, lastName, email, password, phoneNumber } = req.body;
 
   try {
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      res.status(400).json({ message: 'User already exists' });
-      return;
+    if (!firstName || !lastName || !email || !password || !phoneNumber) {
+      return errorResponse(res, 400, messages.validation.firstNameRequired, [
+        {
+          type: "field",
+          msg: messages.validation.firstNameRequired,
+          path: "firstName",
+          location: "body",
+        },
+        {
+          type: "field",
+          msg: messages.validation.lastNameRequired,
+          path: "lastName",
+          location: "body",
+        },
+        {
+          type: "field",
+          msg: messages.validation.phoneNumberInvalid,
+          path: "phoneNumber",
+          location: "body",
+        },
+      ]);
     }
 
-    // Hash the password
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return errorResponse(res, 400, messages.auth.userAlreadyExists, [
+        {
+          type: "field",
+          msg: messages.validation.emailInUse,
+          path: "email",
+          location: "body",
+        },
+      ]);
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
     const userId = uuidv4();
 
-    // Create user in MongoDB
     const newUser = new User({
       userId,
-      name,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
       phoneNumber,
     });
     await newUser.save();
 
-    // Save user to DynamoDB
-    const params = {
+    const dynamoParams = {
       TableName: process.env.USERS_TABLE!,
       Item: {
         userId: { S: userId },
-        name: { S: name },
+        firstName: { S: firstName },
+        lastName: { S: lastName },
         email: { S: email },
         password: { S: hashedPassword },
         phoneNumber: { S: phoneNumber },
@@ -57,52 +76,71 @@ export const createUserHandler = async (req: Request, res: Response): Promise<vo
     };
 
     try {
-      await client.send(new PutItemCommand(params));
+      await dynamoDBClient.send(new PutItemCommand(dynamoParams));
     } catch (dynamoError) {
-      console.error('Error saving to DynamoDB:', dynamoError);
-      res.status(500).json({ message: 'Error saving to DynamoDB', error: dynamoError.message });
-      return;
+      console.error("Error saving to DynamoDB:", dynamoError);
+      return errorResponse(
+        res,
+        500,
+        messages.server.dynamoDBError,
+        null,
+        dynamoError.message
+      );
     }
 
-    res.status(201).json({ message: 'User created successfully', user: { userId, name, email, phoneNumber } });
+    return successResponse(res, 201, messages.auth.userAlreadyExists, {
+      userId,
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+    });
   } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({ message: 'Internal server errors', error: error.message });
+    console.error("Error creating user:", error);
+    return errorResponse(
+      res,
+      500,
+      messages.server.internalError,
+      null,
+      error.message
+    );
   }
 };
 
-
-
-export const loginUserHandler = async (req: Request, res: Response): Promise<void> => {
+export const handleUserLogin = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { email, password } = req.body;
 
-  // Validate request body
-  if (!email || !password) {
-    res.status(400).json({ message: 'Missing required fields' });
-    return;
-  }
-
   try {
-    // Check user in MongoDB
+    if (!email || !password) {
+      return errorResponse(res, 400, messages.validation.emailInvalid);
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(400).json({ message: 'Invalid credentials' });
-      return;
+      return errorResponse(res, 400, messages.auth.invalidCredentials);
     }
 
-    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      res.status(400).json({ message: 'Invalid credentials' });
-      return;
+      return errorResponse(res, 400, messages.auth.invalidCredentials);
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!, {
+      expiresIn: "1h",
+    });
 
-    res.status(200).json({ message: 'Login successful', token });
+    return successResponse(res, 200, messages.auth.loginSuccessful, { token });
   } catch (error) {
-    console.error('Error logging in user:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error logging in user:", error);
+    return errorResponse(
+      res,
+      500,
+      messages.server.internalError,
+      null,
+      error.message
+    );
   }
 };

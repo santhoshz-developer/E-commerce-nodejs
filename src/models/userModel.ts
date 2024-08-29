@@ -3,7 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 interface IUser extends Document {
   userId: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   phoneNumber: string;
@@ -15,7 +16,11 @@ const userSchema: Schema<IUser> = new Schema({
     default: uuidv4,
     unique: true,
   },
-  name: {
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
     type: String,
     required: true,
   },
