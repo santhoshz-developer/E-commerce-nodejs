@@ -1,21 +1,25 @@
 {
-  "validation": {
-    "firstNameRequired": "First name is required",
-    "lastNameRequired": "Last name is required",
-    "emailInvalid": "Enter a valid email",
-    "emailInUse": "Email is already in use",
-    "passwordShort": "Password must be at least 6 characters long",
-    "phoneNumberInvalid": "Enter a valid phone number",
-    "passwordRequired": "Password is required"
-  },
-  "auth": {
-    "userAlreadyExists": "User already exists",
-    "invalidCredentials": "Invalid credentials",
-    "loginSuccessful": "Login successful"
-  },
-  "server": {
-    "internalError": "Internal server error",
-    "dbConnectionError": "Failed to connect to MongoDB",
-    "dynamoDBError": "Error saving to DynamoDB"
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "emailInvalid": "Enter a valid email",
+      "emailInUse": "Email is already in use",
+      "passwordShort": "Password must be at least 6 characters long",
+      "phoneNumberInvalid": "Enter a valid phone number",
+      "passwordRequired": "Password is required",
+      "missingFields": "Some required fields are missing"
+    },
+    "auth": {
+      "userAlreadyExists": "User already exists",
+      "emailInUse": "Email is already in use",
+      "invalidCredentials": "Invalid credentials",
+      "loginSuccessful": "Login successful",
+      "signupSuccessful": "Signup successful"
+    },
+    "server": {
+      "internalError": "Internal server error",
+      "dbConnectionError": "Failed to connect to MongoDB",
+      "dynamoDBError": "Error saving to DynamoDB"
+    }
   }
-}
+  

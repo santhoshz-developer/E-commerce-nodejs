@@ -15,8 +15,9 @@ export const handleUserSignup = async (
   const { firstName, lastName, email, password, phoneNumber } = req.body;
 
   try {
+    // Validate input
     if (!firstName || !lastName || !email || !password || !phoneNumber) {
-      return errorResponse(res, 400, messages.validation.firstNameRequired, [
+      const errors = [
         {
           type: "field",
           msg: messages.validation.firstNameRequired,
@@ -31,28 +32,44 @@ export const handleUserSignup = async (
         },
         {
           type: "field",
+          msg: messages.validation.emailInvalid,
+          path: "email",
+          location: "body",
+        },
+        {
+          type: "field",
+          msg: messages.validation.passwordRequired,
+          path: "password",
+          location: "body",
+        },
+        {
+          type: "field",
           msg: messages.validation.phoneNumberInvalid,
           path: "phoneNumber",
           location: "body",
         },
-      ]);
+      ].filter((error) => !req.body[error.path]);
+      return errorResponse(res, 400, messages.validation.missingFields, errors);
     }
 
+    // Check for existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return errorResponse(res, 400, messages.auth.userAlreadyExists, [
+      return errorResponse(res, 400, messages.auth.emailInUse, [
         {
           type: "field",
-          msg: messages.validation.emailInUse,
+          msg: messages.auth.emailInUse,
           path: "email",
           location: "body",
         },
       ]);
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
     const userId = uuidv4();
 
+    // Create new user
     const newUser = new User({
       userId,
       firstName,
@@ -63,6 +80,7 @@ export const handleUserSignup = async (
     });
     await newUser.save();
 
+    // Save user to DynamoDB
     const dynamoParams = {
       TableName: process.env.USERS_TABLE!,
       Item: {
@@ -88,7 +106,8 @@ export const handleUserSignup = async (
       );
     }
 
-    return successResponse(res, 201, messages.auth.userAlreadyExists, {
+    // Respond with success
+    return successResponse(res, 201, messages.auth.signupSuccessful, {
       userId,
       firstName,
       lastName,
@@ -114,24 +133,29 @@ export const handleUserLogin = async (
   const { email, password } = req.body;
 
   try {
+    // Validate input
     if (!email || !password) {
       return errorResponse(res, 400, messages.validation.emailInvalid);
     }
 
+    // Check for user existence
     const user = await User.findOne({ email });
     if (!user) {
       return errorResponse(res, 400, messages.auth.invalidCredentials);
     }
 
+    // Validate password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return errorResponse(res, 400, messages.auth.invalidCredentials);
     }
 
+    // Generate JWT token
     const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!, {
       expiresIn: "1h",
     });
 
+    // Respond with success
     return successResponse(res, 200, messages.auth.loginSuccessful, { token });
   } catch (error) {
     console.error("Error logging in user:", error);
