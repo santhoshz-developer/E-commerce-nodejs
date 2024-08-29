@@ -19,7 +19,7 @@ app.use(body_parser_1.default.json());
 app.use('/api', userRoutes_1.default);
 // Basic route
 app.get('/', (req, res) => {
-    res.send('Welcome to E-commerce-nodejs');
+    res.send('Welcome to our E-commerce-nodejs');
 });
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

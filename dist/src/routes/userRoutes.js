@@ -14,12 +14,12 @@ router.post('/signup', userValidation_1.validateUserSignup, (req, res, next) => 
         return res.status(400).json({ errors: errors.array() });
     }
     next();
-}, userController_1.createUserHandler);
-router.post('/login', userValidation_1.validateLogin, (req, res, next) => {
+}, userController_1.handleUserSignup);
+router.post('/login', userValidation_1.validateUserLogin, (req, res, next) => {
     const errors = (0, express_validator_1.validationResult)(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
     next();
-}, userController_1.loginUserHandler);
+}, userController_1.handleUserLogin);
 exports.default = router;
