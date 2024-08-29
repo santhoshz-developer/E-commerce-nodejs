@@ -19,7 +19,7 @@ app.use('/api', userRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
-  res.send('Welcome to E-commerce-nodejs');
+  res.send('Welcome to our E-commerce-nodejs');
 });
 
 const PORT = process.env.PORT || 3000;
