@@ -8,7 +8,7 @@ const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const db_1 = __importDefault(require("./src/config/db"));
-const userRoutes_1 = __importDefault(require("./src/routes/userRoutes"));
+const routes_1 = __importDefault(require("./src/routes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 // Connect to MongoDB
@@ -16,7 +16,7 @@ const app = (0, express_1.default)();
 // Middleware
 app.use((0, cors_1.default)());
 app.use(body_parser_1.default.json());
-app.use('/api', userRoutes_1.default);
+app.use('/api', routes_1.default);
 // Basic route
 app.get('/', (req, res) => {
     res.send('Welcome to our E-commerce-nodejs');

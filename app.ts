@@ -3,7 +3,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import connectDatabase from './src/config/db';
-import userRoutes from './src/routes/userRoutes';
+import routes from './src/routes';
 
 dotenv.config();
 
@@ -15,7 +15,7 @@ connectDatabase();
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use('/api', userRoutes);
+app.use('/api', routes); 
 
 // Basic route
 app.get('/', (req, res) => {
